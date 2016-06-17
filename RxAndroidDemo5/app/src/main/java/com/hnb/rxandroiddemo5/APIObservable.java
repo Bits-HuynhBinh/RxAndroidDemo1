@@ -76,6 +76,8 @@ public class APIObservable
 
     public static Observable<GithubUser> getUsers()
     {
+        Observable.just(API.getUsers());
+
         return getUsersString().flatMap(data -> {
 
             Gson gson = new Gson();
