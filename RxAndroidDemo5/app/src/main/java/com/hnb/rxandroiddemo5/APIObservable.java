@@ -17,6 +17,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import rx.Observable;
+import rx.exceptions.Exceptions;
+import rx.functions.Func0;
+import rx.internal.util.RxJavaPluginUtils;
 
 /**
  * Created by Huynh Binh PC on 6/14/2016.
@@ -57,6 +60,41 @@ public class APIObservable
         });
     }
 
+    public static Observable<GithubUser> getUsers2()
+    {
+        return Observable.create(subscriber -> {
+            try
+            {
+                String data = API.getUsers1();
+                subscriber.onNext(data);
+                subscriber.onCompleted();
+            }
+            catch (Exception ex)
+            {
+                subscriber.onError(ex);
+            }
+
+        }).filter(data -> !((String) data).startsWith(HttpUtils.EXCEPTION)).flatMap(data -> {
+
+            Gson gson = new Gson();
+            Type listType = new TypeToken<List<GithubUser>>()
+            {
+            }.getType();
+
+            List<GithubUser> githubUsers = gson.fromJson((String) data, listType);
+
+            Observable<GithubUser> userObservable = Observable.from(githubUsers);
+
+            return userObservable;
+        });
+    }
+
+    public static Observable<String> getUsers1()
+    {
+        return Observable.defer(() -> Observable.just(API.getUsers1()));
+        //return Observable.just(API.getUsers1()).defer();//.filter(response -> !response.startsWith(HttpUtils.EXCEPTION));
+    }
+
 
     public static Observable<String> getUsersString()
     {
@@ -76,7 +114,8 @@ public class APIObservable
 
     public static Observable<GithubUser> getUsers()
     {
-        Observable.just(API.getUsers());
+        //Observable.just(API.getUsers());
+        //.filter(data -> !data.startsWith("Exception:-"))
 
         return getUsersString().flatMap(data -> {
 
@@ -87,21 +126,52 @@ public class APIObservable
 
             List<GithubUser> githubUsers = gson.fromJson(data, listType);
 
-            Observable<GithubUser> abc = Observable.from(githubUsers);
+            Observable<GithubUser> userObservable = Observable.from(githubUsers);
 
-            return abc;
+            return userObservable;
         });
+    }
+
+
+    public static Observable<String> getUserDetailString(String login)
+    {
+        return Observable.create(subscriber -> {
+            try
+            {
+                String data = API.getUserDetail(login);
+                subscriber.onNext(data);
+                subscriber.onCompleted();
+            }
+            catch (Exception ex)
+            {
+                subscriber.onError(ex);
+            }
+        });
+
     }
 
 
     public static Observable<GithubUser> getUsersWithDetail()
     {
-        Observable<GithubUser> observable = getUsers().map(githubUser -> {
+        Observable<GithubUser> observable = getUsers().flatMap(githubUser -> {
 
-            String data = API.getUserDetail(githubUser.login);
-            Gson gson = new Gson();
-            GithubUser githubUser1 = gson.fromJson(data, GithubUser.class);
-            return githubUser1;
+            return getUserDetailString(githubUser.login).map(data -> {
+                Gson gson = new Gson();
+                GithubUser githubUser1 = gson.fromJson(data, GithubUser.class);
+                return githubUser1;
+            });
+
+            /*try
+            {
+                String data = API.getUserDetail(githubUser.login);
+                Gson gson = new Gson();
+                GithubUser githubUser1 = gson.fromJson(data, GithubUser.class);
+                return githubUser1;
+            }
+            catch (Exception ex)
+            {
+                return Observable.error(ex);
+            }*/
 
         });
 

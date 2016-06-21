@@ -37,20 +37,26 @@ import rx.Subscriber;
 public class API
 {
 
-    public static String fetchData(String urlStr)
+    public static String fetchData(String urlStr) throws Exception
     {
         return HttpUtils.httpGet(urlStr);
     }
 
     //get
-    public static String getUsers()
+    public static String getUsers() throws Exception
     {
         String strUrl = "https://api.github.com/users";
         return HttpUtils.httpGet(strUrl);
     }
 
+    public static String getUsers1()
+    {
+        String strUrl = "https://api.github.com/users";
+        return HttpUtils.httpGet1(strUrl);
+    }
 
-    public static String getUserDetail(String login)
+
+    public static String getUserDetail(String login) throws Exception
     {
         String baseUrl = "https://api.github.com/users";
         String requestUrl = baseUrl + "/" + login;

@@ -20,10 +20,37 @@ import javax.net.ssl.HttpsURLConnection;
  */
 public class HttpUtils
 {
+    public static final String EXCEPTION = "EXCEPTION:- ";
 
-    public static String httpGet(String requestURL)
+    public static String httpGet(String requestURL) throws Exception
     {
         HttpURLConnection urlConnection = null;
+
+
+        URL url = new URL(requestURL);
+        urlConnection = (HttpURLConnection) url.openConnection();
+
+        InputStream inputStream = urlConnection.getInputStream();
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"));
+
+        String result = "";
+        String data = "";
+        while ((data = bufferedReader.readLine()) != null)
+        {
+            result += data + "\n";
+        }
+
+        urlConnection.disconnect();
+
+        return result;
+    }
+
+
+    public static String httpGet1(String requestURL)
+    {
+        HttpURLConnection urlConnection = null;
+        String result = "";
+        String data = "";
 
         try
         {
@@ -33,35 +60,34 @@ public class HttpUtils
             InputStream inputStream = urlConnection.getInputStream();
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"));
 
-            String result = "";
-            String data = "";
             while ((data = bufferedReader.readLine()) != null)
             {
                 result += data + "\n";
             }
-
-            return result;
-
         }
         catch (Exception ex)
         {
-            return ex.getMessage();
+            result = "";
+            result = EXCEPTION + ex.getMessage();
         }
         finally
         {
             urlConnection.disconnect();
         }
+
+        return result;
     }
 
     public static String httpPost(String requestURL, HashMap<String, String> postDataParams)
     {
+        HttpURLConnection conn = null;
         URL url;
         String response = "";
         try
         {
             url = new URL(requestURL);
 
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn = (HttpURLConnection) url.openConnection();
             conn.setReadTimeout(15000);
             conn.setConnectTimeout(15000);
             conn.setRequestMethod("POST");
@@ -89,13 +115,16 @@ public class HttpUtils
             }
             else
             {
-                response = "";
-
+                response = EXCEPTION + responseCode;
             }
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            response = EXCEPTION + e.getMessage();
+        }
+        finally
+        {
+            conn.disconnect();
         }
 
         return response;

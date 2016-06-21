@@ -16,9 +16,11 @@ import com.jakewharton.rxbinding.widget.RxTextView;
 import rx.Observable;
 import rx.Scheduler;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.exceptions.Exceptions;
 import rx.functions.Func2;
 import rx.functions.Func3;
 import rx.schedulers.Schedulers;
+import rx.subscriptions.CompositeSubscription;
 
 public class MainActivity extends AppCompatActivity
 {
@@ -28,16 +30,16 @@ public class MainActivity extends AppCompatActivity
     Button button;
     EditText editText;
 
+    CompositeSubscription compositeSubscription;
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        initView();
 
-        textView = (TextView) findViewById(R.id.txtView);
-        button = (Button) findViewById(R.id.button);
-        editText = (EditText) findViewById(R.id.edtData);
 
         RxTextView.textChanges(editText).map(data -> new StringBuilder(data).reverse().toString()).subscribe(finalString -> textView.setText(finalString));
 
@@ -52,10 +54,26 @@ public class MainActivity extends AppCompatActivity
         });*/
 
 
-        click.subscribe(view -> {
+        /*click.subscribe(view -> {
             APIObservable.getUsersWithDetail().subscribeOn(Schedulers.newThread()).observeOn(AndroidSchedulers.mainThread()).subscribe(user -> {
-                Log.e("user", user.login + user.avatar_url + user.created_at + user.email);
+                GithubUser githubUser = (GithubUser) user;
+                Log.e("user", githubUser.login + githubUser.avatar_url + githubUser.created_at + githubUser.email);
+            }, error -> {
+                Log.e("ERROR11111", ((Exception) error).getMessage());
             });
+        });*/
+
+
+        /*click.subscribe(view -> {
+            APIObservable.getUsers().subscribeOn(Schedulers.from(new MyExcutor())).observeOn(AndroidSchedulers.mainThread()).subscribe(data -> Log.e("U", data.login));
+        });*/
+
+        /*click.subscribe(view -> {
+            APIObservable.getUsers1().subscribeOn(Schedulers.newThread()).observeOn(AndroidSchedulers.mainThread()).subscribe(data -> Log.e("Data", data));
+        });*/
+
+        click.subscribe(view -> {
+            APIObservable.getUsers2().subscribeOn(Schedulers.newThread()).observeOn(AndroidSchedulers.mainThread()).subscribe(data -> Log.e("Data", data.login));
         });
 
 
@@ -72,6 +90,13 @@ public class MainActivity extends AppCompatActivity
         });*/
 
 
+    }
+
+    public void initView()
+    {
+        textView = (TextView) findViewById(R.id.txtView);
+        button = (Button) findViewById(R.id.button);
+        editText = (EditText) findViewById(R.id.edtData);
     }
 
 
