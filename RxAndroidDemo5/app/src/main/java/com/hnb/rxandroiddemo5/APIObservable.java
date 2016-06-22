@@ -12,13 +12,16 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.jakewharton.rxbinding.widget.RxTextView;
 
+import java.io.Serializable;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import rx.Observable;
 import rx.exceptions.Exceptions;
 import rx.functions.Func0;
+import rx.functions.Func1;
 import rx.internal.util.RxJavaPluginUtils;
 
 /**
@@ -26,6 +29,24 @@ import rx.internal.util.RxJavaPluginUtils;
  */
 public class APIObservable
 {
+
+    public static Observable<String> onErrorReturn()
+    {
+        // fletchdata1 return runtime exception
+        return Observable.just("hello").map(data -> API.fetchData1("")).onErrorReturn(throwable -> "empty");
+    }
+
+    public static Observable<String> retry()
+    {
+        return Observable.interval(1, TimeUnit.SECONDS).map(input -> {
+            if (Math.random() < .5)
+            {
+                throw new RuntimeException();
+            }
+
+            return "Success " + input;
+        }).retry();
+    }
 
     public static Observable<String> forgotPassword()
     {

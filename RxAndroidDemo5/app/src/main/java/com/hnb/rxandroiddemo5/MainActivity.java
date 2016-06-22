@@ -19,6 +19,7 @@ import rx.Observable;
 import rx.Scheduler;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.exceptions.Exceptions;
+import rx.functions.Action1;
 import rx.functions.Func2;
 import rx.functions.Func3;
 import rx.schedulers.Schedulers;
@@ -49,9 +50,9 @@ public class MainActivity extends AppCompatActivity
         //button.setOnClickListener(v -> test2());
 
 
-
         Observable click = RxView.clicks(button).share();
-        click.subscribe(view -> {
+
+        /*click.subscribe(view -> {
             DataSourcesObservable sources = new DataSourcesObservable();
             // Create our sequence for querying best available data
             Observable<Data> source = Observable.concat(sources.memory(), sources.disk(), sources.network()).first(data -> data != null && data.isUpToDate());
@@ -62,6 +63,15 @@ public class MainActivity extends AppCompatActivity
             // Occasionally clear memory (as if app restarted) so that we must go to disk
             Observable.interval(3, TimeUnit.SECONDS).subscribe(aLong -> sources.clearDataInMemory());
 
+        });*/
+
+        /*click.subscribe(view -> {
+            APIObservable.onErrorReturn().subscribe(data -> Log.e("data", data));
+        });*/
+
+
+        click.subscribe(view -> {
+            APIObservable.retry().subscribe(data -> Log.e("data", data));
         });
 
 

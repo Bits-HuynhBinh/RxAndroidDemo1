@@ -37,6 +37,11 @@ import rx.Subscriber;
 public class API
 {
 
+    public static String fetchData1(String urlStr)
+    {
+        throw new RuntimeException();
+    }
+
     public static String fetchData(String urlStr) throws Exception
     {
         return HttpUtils.httpGet(urlStr);
