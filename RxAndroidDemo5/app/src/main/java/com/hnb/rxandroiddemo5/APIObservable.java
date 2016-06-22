@@ -56,7 +56,6 @@ public class APIObservable
             {
                 subscriber.onError(ex);
             }
-
         });
     }
 

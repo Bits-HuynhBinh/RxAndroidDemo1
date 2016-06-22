@@ -13,6 +13,8 @@ import com.jakewharton.rxbinding.view.RxView;
 import com.jakewharton.rxbinding.widget.RxCompoundButton;
 import com.jakewharton.rxbinding.widget.RxTextView;
 
+import java.util.concurrent.TimeUnit;
+
 import rx.Observable;
 import rx.Scheduler;
 import rx.android.schedulers.AndroidSchedulers;
@@ -43,9 +45,27 @@ public class MainActivity extends AppCompatActivity
 
         RxTextView.textChanges(editText).map(data -> new StringBuilder(data).reverse().toString()).subscribe(finalString -> textView.setText(finalString));
 
+
         //button.setOnClickListener(v -> test2());
 
+
+
         Observable click = RxView.clicks(button).share();
+        click.subscribe(view -> {
+            DataSourcesObservable sources = new DataSourcesObservable();
+            // Create our sequence for querying best available data
+            Observable<Data> source = Observable.concat(sources.memory(), sources.disk(), sources.network()).first(data -> data != null && data.isUpToDate());
+
+            // "Request" latest data once a second
+            Observable.interval(1, TimeUnit.SECONDS).flatMap(aLong -> source).subscribe(data -> Log.e("Received: ", data.value));
+
+            // Occasionally clear memory (as if app restarted) so that we must go to disk
+            Observable.interval(3, TimeUnit.SECONDS).subscribe(aLong -> sources.clearDataInMemory());
+
+        });
+
+
+
 
         /*click.subscribe(view -> {
             APIObservable.getUsers().subscribeOn(Schedulers.newThread()).observeOn(AndroidSchedulers.mainThread()).subscribe(user -> {
@@ -72,9 +92,9 @@ public class MainActivity extends AppCompatActivity
             APIObservable.getUsers1().subscribeOn(Schedulers.newThread()).observeOn(AndroidSchedulers.mainThread()).subscribe(data -> Log.e("Data", data));
         });*/
 
-        click.subscribe(view -> {
+        /*click.subscribe(view -> {
             APIObservable.getUsers2().subscribeOn(Schedulers.newThread()).observeOn(AndroidSchedulers.mainThread()).subscribe(data -> Log.e("Data", data.login));
-        });
+        });*/
 
 
         /*click.subscribe(view -> {
@@ -88,8 +108,6 @@ public class MainActivity extends AppCompatActivity
                     .subscribe(data3 -> Log.e("data3", data3));
 
         });*/
-
-
     }
 
     public void initView()
