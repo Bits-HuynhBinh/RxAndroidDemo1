@@ -36,6 +36,8 @@ public class APIObservable
         return Observable.just("hello").map(data -> API.fetchData1("")).onErrorReturn(throwable -> "empty");
     }
 
+
+
     public static Observable<String> retry()
     {
         return Observable.interval(1, TimeUnit.SECONDS).map(input -> {

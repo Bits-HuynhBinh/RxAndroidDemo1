@@ -1,5 +1,6 @@
 package com.hnb.rxandroiddemo5;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -12,6 +13,7 @@ import android.widget.Toast;
 import com.jakewharton.rxbinding.view.RxView;
 import com.jakewharton.rxbinding.widget.RxCompoundButton;
 import com.jakewharton.rxbinding.widget.RxTextView;
+import com.trello.rxlifecycle.RxLifecycle;
 
 import java.util.concurrent.TimeUnit;
 
@@ -33,6 +35,10 @@ public class MainActivity extends AppCompatActivity
     Button button;
     EditText editText;
 
+    Context context = null;
+
+    Button btnInsert;
+
     CompositeSubscription compositeSubscription;
 
     @Override
@@ -41,16 +47,33 @@ public class MainActivity extends AppCompatActivity
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        context = this;
         initView();
 
+        PermissionManager.requestEach(this);
 
-        RxTextView.textChanges(editText).map(data -> new StringBuilder(data).reverse().toString()).subscribe(finalString -> textView.setText(finalString));
+        SQLBriteManager sqlBriteManager = new SQLBriteManager(this);
+
+
+        //RxTextView.textChanges(editText).map(data -> new StringBuilder(data).reverse().toString()).subscribe(finalString -> textView.setText(finalString));
 
 
         //button.setOnClickListener(v -> test2());
 
 
         Observable click = RxView.clicks(button).share();
+        Observable btnInsertClicks = RxView.clicks(btnInsert);
+
+
+        click.subscribe(view -> {
+            sqlBriteManager.query();
+        });
+
+
+        btnInsertClicks.subscribe(view -> {
+            sqlBriteManager.insertWithTransaction();
+        });
+
 
         /*click.subscribe(view -> {
             DataSourcesObservable sources = new DataSourcesObservable();
@@ -70,11 +93,9 @@ public class MainActivity extends AppCompatActivity
         });*/
 
 
-        click.subscribe(view -> {
+        /*click.subscribe(view -> {
             APIObservable.retry().subscribe(data -> Log.e("data", data));
-        });
-
-
+        });*/
 
 
         /*click.subscribe(view -> {
@@ -125,6 +146,7 @@ public class MainActivity extends AppCompatActivity
         textView = (TextView) findViewById(R.id.txtView);
         button = (Button) findViewById(R.id.button);
         editText = (EditText) findViewById(R.id.edtData);
+        btnInsert = (Button) findViewById(R.id.btnInsert);
     }
 
 

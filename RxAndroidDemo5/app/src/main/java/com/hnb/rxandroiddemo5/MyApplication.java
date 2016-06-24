@@ -14,14 +14,15 @@ public class MyApplication extends Application
     public static RequestQueue requestQueue;
 
     @Override
-    public void onCreate() {
+    public void onCreate()
+    {
         super.onCreate();
     }
 
     public RequestQueue getRequestQueue(Context context)
     {
 
-        if(requestQueue == null)
+        if (requestQueue == null)
         {
             requestQueue = Volley.newRequestQueue(context);
         }
