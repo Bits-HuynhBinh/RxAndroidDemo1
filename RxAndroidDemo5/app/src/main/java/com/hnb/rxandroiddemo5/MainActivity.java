@@ -220,7 +220,7 @@ public class MainActivity extends AppCompatActivity
         // click throttle
         // https://camo.githubusercontent.com/995c301de2f566db10748042a5a67cc5d9ac45d9/687474703a2f2f692e696d6775722e636f6d2f484d47574e4f352e706e67
         Observable click = RxView.clicks(button);
-        click.throttleLast(1000, TimeUnit.MILLISECONDS).subscribe(data -> Log.e("click", "click"));
+        click.throttleWithTimeout(1000, TimeUnit.MILLISECONDS).subscribe(data -> Log.e("click", "click"));
 
 
     }
