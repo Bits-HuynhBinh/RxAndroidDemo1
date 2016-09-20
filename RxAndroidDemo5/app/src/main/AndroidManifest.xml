@@ -22,9 +22,9 @@
         </activity>
 
 
-        <activity android:name=".RxMainActivity">
+       <!-- <activity android:name=".RxMainActivity">
 
-        </activity>
+        </activity>-->
 
 
     </application>

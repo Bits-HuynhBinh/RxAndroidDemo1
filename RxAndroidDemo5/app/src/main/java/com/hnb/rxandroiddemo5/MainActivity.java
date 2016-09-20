@@ -17,6 +17,9 @@ import com.trello.rxlifecycle.RxLifecycle;
 
 import java.util.concurrent.TimeUnit;
 
+import io.realm.Realm;
+import io.realm.RealmChangeListener;
+import io.realm.RealmResults;
 import rx.Observable;
 import rx.Scheduler;
 import rx.android.schedulers.AndroidSchedulers;
@@ -35,11 +38,25 @@ public class MainActivity extends AppCompatActivity
     Button button;
     EditText editText;
 
+    Button btnGet;
+
     Context context = null;
 
     Button btnInsert;
 
     CompositeSubscription compositeSubscription;
+    static int mCount = 0;
+
+
+    public static RealmResults<User> users;
+
+    private RealmChangeListener dogListener;
+
+    private void showData(RealmResults<User> data)
+    {
+        Log.e("data", "daaaa");
+        Log.e("Data1", users.size() + "");
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -50,29 +67,81 @@ public class MainActivity extends AppCompatActivity
         context = this;
         initView();
 
-        PermissionManager.requestEach(this);
+        /*Realm myRealm = Realm.getInstance(MyApplication.getConfig(this));
+        users = myRealm.where(User.class).findAll();
 
-        SQLBriteManager sqlBriteManager = new SQLBriteManager(this);
+        users.addChangeListener(new RealmChangeListener<RealmResults<User>>()
+        {
+            @Override
+            public void onChange(RealmResults<User> element)
+            {
+                int size = element.size();
+                Log.e("sds",size +"");
+            }
+        });
+
+        btnInsert.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                //getData(MainActivity.this);
+                insertToRealm(context);
+            }
+        });
+
+
+        button.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                updateToRealm(context);
+            }
+        });
+
+        btnGet.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                textView.setText(getDataFromRealm(context));
+            }
+        });*/
+
+
+        //myRealm.where(User.class).findAll().asObservable();
+
+        /*users.addChangeListener(new RealmChangeListener<RealmResults<User>>()
+        {
+            @Override
+            public void onChange(RealmResults<User> element)
+            {
+                Log.e("Changed", "changed");
+            }
+        });*/
+
+
+        //Observable<Realm> realmObservable = myRealm.asObservable();
+        //Observable<RealmResults<User>> resultsObservable = users.asObservable();
+        //resultsObservable.debounce(100, TimeUnit.MILLISECONDS).observeOn(AndroidSchedulers.mainThread()).subscribe(data -> showData(data) );
 
 
         //RxTextView.textChanges(editText).map(data -> new StringBuilder(data).reverse().toString()).subscribe(finalString -> textView.setText(finalString));
-
-
         //button.setOnClickListener(v -> test2());
 
+        //PermissionManager.requestEach(this);
 
+        /*SQLBriteManager sqlBriteManager = new SQLBriteManager(this);
         Observable click = RxView.clicks(button).share();
         Observable btnInsertClicks = RxView.clicks(btnInsert);
-
-
         click.subscribe(view -> {
             sqlBriteManager.query();
         });
 
-
         btnInsertClicks.subscribe(view -> {
             sqlBriteManager.insertWithTransaction();
-        });
+        });*/
 
 
         /*click.subscribe(view -> {
@@ -139,6 +208,21 @@ public class MainActivity extends AppCompatActivity
                     .subscribe(data3 -> Log.e("data3", data3));
 
         });*/
+
+       /* String [] test = new String[5];
+        test[0] = "a";
+        test[0] = "b"; test[0] = "c";
+        test[0] = "d";
+        test[0] = "e";*/
+        //.flatMap(aLong -> source).subscribe(data -> Log.e("Received: ", data.value));
+
+
+        // click throttle
+        // https://camo.githubusercontent.com/995c301de2f566db10748042a5a67cc5d9ac45d9/687474703a2f2f692e696d6775722e636f6d2f484d47574e4f352e706e67
+        Observable click = RxView.clicks(button);
+        click.throttleLast(1000, TimeUnit.MILLISECONDS).subscribe(data -> Log.e("click", "click"));
+
+
     }
 
     public void initView()
@@ -147,6 +231,7 @@ public class MainActivity extends AppCompatActivity
         button = (Button) findViewById(R.id.button);
         editText = (EditText) findViewById(R.id.edtData);
         btnInsert = (Button) findViewById(R.id.btnInsert);
+        btnGet = (Button) findViewById(R.id.btnGet);
     }
 
 
@@ -158,5 +243,86 @@ public class MainActivity extends AppCompatActivity
     public void test2()
     {
         APIObservable.fetchDataFromGoogle("http://www.google.com").subscribe();
+    }
+
+
+    public static void insertToRealm(Context context)
+    {
+        Realm realmbg = Realm.getInstance(MyApplication.getConfig(context));
+        realmbg.executeTransaction(new Realm.Transaction()
+        {
+            @Override
+            public void execute(Realm realm)
+            {
+                User user = realm.createObject(User.class);
+                user.setName("user 133333");
+                user.setAge(1);
+                //user.setSessionId(1);
+            }
+        });
+    }
+
+    public static void updateToRealm(Context context)
+    {
+        Realm realmbg = Realm.getInstance(MyApplication.getConfig(context));
+        realmbg.executeTransaction(new Realm.Transaction()
+        {
+            @Override
+            public void execute(Realm realm)
+            {
+
+                User user = new User();
+                user.setName("user 1111");
+                user.setAge(1);
+                user.setSessionId(1);
+
+                realm.copyToRealmOrUpdate(user);
+            }
+        });
+    }
+
+
+    public static String getDataFromRealm(Context context)
+    {
+        Realm realmbg = Realm.getInstance(MyApplication.getConfig(context));
+        RealmResults<User> us = realmbg.where(User.class).findAll();
+
+        StringBuilder stringBuilder = new StringBuilder();
+
+        for (User u : us)
+        {
+            stringBuilder.append(u.getName() + "-" + u.getAge() + "-" + u.getSessionId());
+            stringBuilder.append("-");
+        }
+
+        return stringBuilder.toString();
+    }
+
+
+    public static void getData(final Context context)
+    {
+
+        Runnable runnable = new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                Log.e("Thread", Thread.currentThread().getName());
+                Realm realmbg = Realm.getInstance(MyApplication.getConfig(context));
+
+                realmbg.beginTransaction();
+                for (int i = 0; i < 100; i++)
+                {
+                    User dog = realmbg.createObject(User.class);
+                    dog.setName("name" + i);
+                    dog.setAge(i);
+
+                }
+                realmbg.commitTransaction();
+            }
+        };
+
+        Thread thread = new Thread(runnable);
+        thread.start();
     }
 }
