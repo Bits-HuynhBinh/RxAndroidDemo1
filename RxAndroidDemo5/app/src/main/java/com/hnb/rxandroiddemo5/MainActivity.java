@@ -1,8 +1,13 @@
 package com.hnb.rxandroiddemo5;
 
+import android.Manifest;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -16,15 +21,19 @@ import com.jakewharton.rxbinding.widget.RxTextView;
 import com.trello.rxlifecycle.RxLifecycle;
 
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import io.realm.Realm;
 import io.realm.RealmChangeListener;
 import io.realm.RealmResults;
 import rx.Observable;
 import rx.Scheduler;
+import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.exceptions.Exceptions;
 import rx.functions.Action1;
+import rx.functions.Func1;
 import rx.functions.Func2;
 import rx.functions.Func3;
 import rx.schedulers.Schedulers;
@@ -52,20 +61,131 @@ public class MainActivity extends AppCompatActivity
 
     private RealmChangeListener dogListener;
 
+    public static final int REQUEST_READ_PHONE_STATE = 1011;
+
     private void showData(RealmResults<User> data)
     {
         Log.e("data", "daaaa");
         Log.e("Data1", users.size() + "");
     }
 
+    public static GithubUser saveDB(GithubUser user)
+    {
+        Log.e("save db", user.email);
+        return  user;
+    }
+
+    private static ABC UserToABC(GithubUser user, int id)
+    {
+        ABC abc = new ABC();
+        abc.A = user.name;
+        abc.B = user.avatar_url;
+
+        Log.e("Map", id + "-" + abc.toString());
+
+        return abc;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case REQUEST_READ_PHONE_STATE:
+                if ((grantResults.length > 0) && (grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                    //TODO
+
+                    final TelephonyManager tm = (TelephonyManager) getBaseContext().getSystemService(Context.TELEPHONY_SERVICE);
+
+                    final String tmDevice, tmSerial, androidId;
+                    tmDevice = "" + tm.getDeviceId();
+                    tmSerial = "" + tm.getSimSerialNumber();
+                    androidId = "" + android.provider.Settings.Secure.getString(getContentResolver(), android.provider.Settings.Secure.ANDROID_ID);
+
+                    Log.e("ID1", tmDevice);
+                    Log.e("ID2", tmSerial);
+                    Log.e("ID3", androidId);
+                }
+                break;
+
+            default:
+                break;
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        context = this;
+
+
+        Person person = new Person();
+        person.dog = new Dog();
+        person.dog.person = person;
+        person.dog.person.dog = person.dog;
+
+        int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE);
+
+        if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_PHONE_STATE}, REQUEST_READ_PHONE_STATE);
+        } else {
+            //TODO
+        }
+
+
+
+        final TelephonyManager tm = (TelephonyManager) getBaseContext().getSystemService(Context.TELEPHONY_SERVICE);
+
+        final String tmDevice, tmSerial, androidId;
+        tmDevice = "" + tm.getDeviceId();
+        tmSerial = "" + tm.getSimSerialNumber();
+        androidId = "" + android.provider.Settings.Secure.getString(getContentResolver(), android.provider.Settings.Secure.ANDROID_ID);
+
+        Log.e("ID1", tmDevice);
+        Log.e("ID2", tmSerial);
+        Log.e("ID3", androidId);
+
+
+       /* for(int i = 0; i < 1; i++)
+        {
+            final int a = i;
+            APIObservable
+                    .getUsers()
+                    .subscribeOn(Schedulers.newThread())
+                    .map(user -> UserToABC(user, a))
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(abc -> {Log.e("subscribe", a + "-" + abc.toString());});
+        }*/
+
+        /*context = this;
         initView();
+
+
+        Subscription subscription = APIObservable.getUsers().map(users -> saveDB(users))
+                .subscribe(user -> {Log.e("update UI",user.email);});
+
+
+        try
+        {
+            Thread.sleep(500);
+        } catch (InterruptedException e)
+        {
+            e.printStackTrace();
+        }
+
+        subscription.unsubscribe();*/
+
+
+
+
+
+       /* APIObservable.getUsers().map(new Func1<GithubUser, Object>()
+        {
+            @Override
+            public Object call(GithubUser githubUser)
+            {
+                return null;
+            }
+        });*/
 
         /*Realm myRealm = Realm.getInstance(MyApplication.getConfig(this));
         users = myRealm.where(User.class).findAll();
@@ -219,8 +339,8 @@ public class MainActivity extends AppCompatActivity
 
         // click throttle
         // https://camo.githubusercontent.com/995c301de2f566db10748042a5a67cc5d9ac45d9/687474703a2f2f692e696d6775722e636f6d2f484d47574e4f352e706e67
-        Observable click = RxView.clicks(button);
-        click.throttleWithTimeout(1000, TimeUnit.MILLISECONDS).subscribe(data -> Log.e("click", "click"));
+        //Observable click = RxView.clicks(button);
+        //click.throttleWithTimeout(1000, TimeUnit.MILLISECONDS).subscribe(data -> Log.e("click", "click"));
 
 
     }

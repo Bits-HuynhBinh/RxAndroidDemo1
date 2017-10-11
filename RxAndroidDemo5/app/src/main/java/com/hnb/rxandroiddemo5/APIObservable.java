@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import rx.Observable;
+import rx.Subscriber;
 import rx.exceptions.Exceptions;
 import rx.functions.Func0;
 import rx.functions.Func1;
@@ -52,6 +53,15 @@ public class APIObservable
 
     public static Observable<String> forgotPassword()
     {
+        Observable.create(new Observable.OnSubscribe<Object>()
+        {
+            @Override
+            public void call(Subscriber<? super Object> subscriber)
+            {
+
+            }
+        });
+
         return Observable.create(subscriber -> {
             try
             {
